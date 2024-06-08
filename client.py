@@ -15,7 +15,7 @@ def test_flask_server(image_path, server_url='http://54.180.25.63:3333/face'):
         print('Error:', response.json())
 
 # 테스트할 이미지 파일 경로
-image_path = 'image.png'
+image_path = './clientTestData/image.png'
 
 # Flask 서버 테스트 실행
 test_flask_server(image_path)

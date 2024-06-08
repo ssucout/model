@@ -5,7 +5,7 @@ from torchvision import models, transforms
 from PIL import Image
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
+import traceback
 #모델
 class CustomResNet(nn.Module):
     def __init__(self, num_classes):
@@ -28,7 +28,7 @@ CORS(app)
 
 # 모델 불러오는 부분
 # 모델 경로 설정해주기
-num_classes = 6
+num_classes = 7
 model = CustomResNet(num_classes=num_classes)
 model.load_state_dict(torch.load('./myModel/model.pth', map_location=torch.device('cpu')))
 model.eval()
@@ -42,7 +42,7 @@ transform = transforms.Compose([
 
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/face', methods=['POST'])
 def predict():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -52,7 +52,7 @@ def predict():
         return jsonify({'error': 'No selected file'}), 400
 
     try:
-        img = Image.open(io.BytesIO(file.read()))
+        img = Image.open(file.stream).convert('RGB')
         img = transform(img).unsqueeze(0)
 
         with torch.no_grad():
@@ -63,6 +63,7 @@ def predict():
         return jsonify({'predicted_class': predicted_class})
 
     except Exception as e:
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
