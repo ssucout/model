@@ -10,8 +10,10 @@ import traceback
 class CustomResNet(nn.Module):
     def __init__(self, num_classes):
         super(CustomResNet, self).__init__()
-        self.resnet = models.resnet50(weights=None)
+        self.resnet = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
+        # 기존 fc 레이어의 출력 크기를 확인하여 새로운 레이어 추가
         num_ftrs = self.resnet.fc.in_features
+        # 원래 ResNet50의 마지막 fc 레이어를 제거하고 새로운 레이어 추가
         self.resnet.fc = nn.Sequential(
             nn.Linear(num_ftrs, 512),
             nn.ReLU(),
@@ -58,8 +60,9 @@ def predict():
         with torch.no_grad():
             outputs = model(img)
             _, predicted = torch.max(outputs, 1)
-            predicted_class = predicted.item()
+            predicted_class = predicted.item() + 1
 
+        print(f'Predicted class: {predicted_class}')
         return jsonify({'predicted_class': predicted_class})
 
     except Exception as e:
